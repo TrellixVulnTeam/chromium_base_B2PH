@@ -1,0 +1,10 @@
+
+set(debugging_buildflags ${CMAKE_CURRENT_SOURCE_DIR}/debug/debugging_buildflags.h)
+file(WRITE ${debugging_buildflags} "#pragma once\n")
+file(APPEND ${debugging_buildflags} "#define ENABLE_LOCATION_SOURCE 1\n")
+file(APPEND ${debugging_buildflags} "#define ENABLE_PROFILING 1\n")
+file(APPEND ${debugging_buildflags} "#define CAN_UNWIND_WITH_FRAME_POINTERS 0\n")
+file(APPEND ${debugging_buildflags} "#define UNSAFE_DEVELOPER_BUILD 0\n")
+file(APPEND ${debugging_buildflags} "#define CAN_UNWIND_WITH_CFI_TABLE 0\n")
+file(APPEND ${debugging_buildflags} "#define ENABLE_GDBINIT_WARNING 0\n")
+file(APPEND ${debugging_buildflags} "#define ENABLE_LLDBINIT_WARNING 0\n")
