@@ -1,5 +1,5 @@
 ﻿project (base)
-ADD_DEFINITIONS(-DNOMINMAX)
+ADD_DEFINITIONS(-DNOMINMAX -DU_STATIC_IMPLEMENTATION -DU_PLATFORM_HAS_WINUWP_API)
 if (WIN32)  
 ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE)
 endif(WIN32)
@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
 endif()
 
-INCLUDE_DIRECTORIES (. .. third_party/boringssl/src/include)
+INCLUDE_DIRECTORIES (. .. third_party/boringssl/src/include third_party/icu/source/common)
 
 
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/logging_buildflags.cmake")
@@ -93,6 +93,14 @@ SOURCE_GROUP("third_party\\double_conversion" FILES ${third_party_double_convers
 
 FILE (GLOB third_party_icu third_party/icu/*.h third_party/icu/*.cc)
 SOURCE_GROUP("third_party\\icu" FILES ${third_party_icu})
+
+
+FILE (GLOB_RECURSE third_party_icu_source_common third_party/icu/source/common/*.h third_party/icu/source/common/*.cpp)
+SOURCE_GROUP("third_party\\icu\\source\\common" FILES ${third_party_icu_source_common})
+
+FILE (GLOB_RECURSE third_party_icu_source_i18n third_party/icu/source/i18n/*.h third_party/icu/source/i18n/*.cpp)
+SOURCE_GROUP("third_party\\icu\\source\\i18n" FILES ${third_party_icu_source_i18n})
+
 
 
 FILE (GLOB threading threading/*.h threading/*.cc)
@@ -483,4 +491,5 @@ elseif (ANDROID)
 
 endif(WIN32)
  
-ADD_LIBRARY (base ${task} ${third_party_superfasthash} ${header_files} ${source_files} ${memory} ${message_loop} ${json} ${numerics} ${power_monitor} ${process} ${profiler} ${allocator} ${system} ${trace_event} ${util} ${timer} ${hash} ${strings} ${files} ${containers} ${synchronization}  ${third_party_icu} ${threading} ${win} ${debug}  ${time} ${metrics} ${third_party_nspr} ${third_party_double_conversion} ${third_party_cityhash})
+ 
+ADD_LIBRARY (base ${task} ${third_party_superfasthash} ${third_party_icu_source_i18n} ${third_party_icu_source_common}  ${header_files} ${source_files} ${memory} ${message_loop} ${json} ${numerics} ${power_monitor} ${process} ${profiler} ${allocator} ${system} ${trace_event} ${util} ${timer} ${hash} ${strings} ${files} ${containers} ${synchronization}  ${third_party_icu} ${threading} ${win} ${debug}  ${time} ${metrics} ${third_party_nspr} ${third_party_double_conversion} ${third_party_cityhash})

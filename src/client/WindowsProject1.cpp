@@ -16,6 +16,7 @@
 #include <base/logging.h>
 #include <base/command_line.h>
 #include <base/message_loop/message_loop_current.h>
+#include <url/url_util.h>
 #include "framework.h"
 #define MAX_LOADSTRING 100
 
@@ -48,14 +49,14 @@ class WinMsgFilter : public base::MessagePumpForUI::Observer {
 
 public:
   virtual void WillDispatchMSG(const MSG& msg) override {
-   LOG(INFO) << "WillDispatchMSG:" << msg.message;
+   
     if (msg.message == WM_CLOSE) {
      LOG(INFO) << "WillDispatchMSG: WM_CLOSE" ;
     }
   }
 
   virtual void DidDispatchMSG(const MSG& msg) override {
-    LOG(INFO) << "DidDispatchMSG:" << msg.message;
+    
   }
 };
 
@@ -73,6 +74,42 @@ wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
   LoadStringW(hInstance, IDC_WINDOWSPROJECT1, szWindowClass, MAX_LOADSTRING);
   MyRegisterClass(hInstance);
   
+
+  const char* length_cases[] = {
+      // One with everything in it.
+      "http://user:pass@host:99/foo?bar#baz",
+      // One with nothing in it.
+      "",
+      // Working backwards, let's start taking off stuff from the full one.
+      "http://user:pass@host:99/foo?bar#",
+      "http://user:pass@host:99/foo?bar",
+      "http://user:pass@host:99/foo?",
+      "http://user:pass@host:99/foo",
+      "http://user:pass@host:99/",
+      "http://user:pass@host:99",
+      "http://user:pass@host:",
+      "http://user:pass@host",
+      "http://host",
+      "http://user@",
+      "http:",
+  };
+  for (size_t i = 0; i < base::size(length_cases); i++) {
+    int true_length = static_cast<int>(strlen(length_cases[i]));
+
+    url::Parsed parsed;
+    url::ParseStandardURL(length_cases[i], true_length, &parsed);
+
+    
+  }
+
+  const char kStr1[] = "http://www.com/";
+  bool b = url::FindAndCompareScheme(kStr1, static_cast<int>(strlen(kStr1)),
+                                   "http", NULL);
+  const char kHTTPScheme[] = "http";
+
+  url::SchemeType scheme_type;
+  b = url::GetStandardSchemeType(
+      kHTTPScheme, url::Component(0, strlen(kHTTPScheme)), &scheme_type);
 
   // 执行应用程序初始化:
   if (!InitInstance(hInstance, nCmdShow)) {
@@ -93,8 +130,8 @@ wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
   base::RunLoop run_loop;
  
   base::PlatformThread::SetName("maintest");
-  base::MessageLoopCurrentForUI::Get()->AddMessagePumpObserver(
-      new WinMsgFilter);
+  /*base::MessageLoopCurrentForUI::Get()->AddMessagePumpObserver(
+      new WinMsgFilter);*/
 
 
   base::PowerMonitor::Initialize(
