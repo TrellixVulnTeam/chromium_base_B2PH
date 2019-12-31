@@ -33,6 +33,9 @@ list(REMOVE_ITEM base "${CMAKE_CURRENT_SOURCE_DIR}/base/load_timing_info_test_ut
 list(REMOVE_ITEM base "${CMAKE_CURRENT_SOURCE_DIR}/base/load_timing_info_test_util.h")
 list(REMOVE_ITEM base "${CMAKE_CURRENT_SOURCE_DIR}/base/hex_utils_test.cc")
 list(REMOVE_ITEM base "${CMAKE_CURRENT_SOURCE_DIR}/base/fuzzer_test_support.cc")
+list(REMOVE_ITEM base "${CMAKE_CURRENT_SOURCE_DIR}/base/data_url_fuzzer.cc")
+list(REMOVE_ITEM base "${CMAKE_CURRENT_SOURCE_DIR}/base/directory_listing.cc")
+list(REMOVE_ITEM base "${CMAKE_CURRENT_SOURCE_DIR}/base/directory_lister.cc")
 
 
 

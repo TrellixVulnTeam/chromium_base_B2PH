@@ -1,5 +1,5 @@
 ﻿project (base)
-ADD_DEFINITIONS(-DNOMINMAX -DU_STATIC_IMPLEMENTATION -DU_PLATFORM_HAS_WINUWP_API)
+ADD_DEFINITIONS(-DNOMINMAX -DU_STATIC_IMPLEMENTATION -DU_PLATFORM_HAS_WINUWP_API -DBASE_I18N_IMPLEMENTATION)
 if (WIN32)  
 ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE)
 endif(WIN32)
@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
 endif()
 
-INCLUDE_DIRECTORIES (. .. third_party/boringssl/src/include third_party/icu/source/common)
+INCLUDE_DIRECTORIES (. .. third_party/boringssl/src/include third_party/icu/source/common third_party/icu/source/i18n)
 
 
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/logging_buildflags.cmake")
@@ -24,76 +24,759 @@ INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/sanitizer_buildflags.cmake")
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/clang_coverage_buildflags.cmake")
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/allocator_buildflags.cmake")
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/generated_build_date.cmake")
+INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/partition_alloc_buildflags.cmake")
+
+FILE (GLOB source_files "allocator/allocator_check.cc"
+    "allocator/allocator_check.h"
+    "allocator/allocator_extension.cc"
+    "allocator/allocator_extension.h"
+    "at_exit.cc"
+    "at_exit.h"
+    "atomic_ref_count.h"
+    "atomic_sequence_num.h"
+    "atomicops.h"
+    "atomicops_internals_atomicword_compat.h"
+    "atomicops_internals_portable.h"
+    "atomicops_internals_x86_msvc.h"
+    "auto_reset.h"
+    "barrier_closure.cc"
+    "barrier_closure.h"
+    "base64.cc"
+    "base64.h"
+    "base64url.cc"
+    "base64url.h"
+    "base_export.h"
+    "base_switches.h"
+    "big_endian.cc"
+    "big_endian.h"
+    "bind.h"
+    "bind_helpers.h"
+    "bind_internal.h"
+    "bit_cast.h"
+    "bits.h"
+    "build_time.cc"
+    "build_time.h"
+    "callback.h"
+    "callback_forward.h"
+    "callback_helpers.cc"
+    "callback_helpers.h"
+    "callback_internal.cc"
+    "callback_internal.h"
+    "callback_list.h"
+    "cancelable_callback.h"
+    "command_line.cc"
+    "command_line.h"
+    "compiler_specific.h"
+    "component_export.h"
+    "containers/adapters.h"
+    "containers/buffer_iterator.h"
+    "containers/checked_iterators.h"
+    "containers/checked_range.h"
+    "containers/circular_deque.h"
+    "containers/flat_map.h"
+    "containers/flat_set.h"
+    "containers/flat_tree.h"
+    "containers/id_map.h"
+    "containers/intrusive_heap.cc"
+    "containers/intrusive_heap.h"
+    "containers/linked_list.h"
+    "containers/mru_cache.h"
+    "containers/small_map.h"
+    "containers/span.h"
+    "containers/stack.h"
+    "containers/stack_container.h"
+    "containers/unique_ptr_adapters.h"
+    "containers/util.h"
+    "containers/vector_buffer.h"
+    "cpu.cc"
+    "cpu.h"
+    "critical_closure.h"
+    "debug/activity_analyzer.cc"
+    "debug/activity_analyzer.h"
+    "debug/activity_tracker.cc"
+    "debug/activity_tracker.h"
+    "debug/alias.cc"
+    "debug/alias.h"
+    "debug/asan_invalid_access.cc"
+    "debug/asan_invalid_access.h"
+    "debug/crash_logging.cc"
+    "debug/crash_logging.h"
+    "debug/debugger.cc"
+    "debug/debugger.h"
+    "debug/dump_without_crashing.cc"
+    "debug/dump_without_crashing.h"
+    "debug/leak_annotations.h"
+    "debug/leak_tracker.h"
+    "debug/profiler.cc"
+    "debug/profiler.h"
+    "debug/stack_trace.cc"
+    "debug/stack_trace.h"
+    "debug/task_trace.cc"
+    "debug/task_trace.h"
+    "deferred_sequenced_task_runner.cc"
+    "deferred_sequenced_task_runner.h"
+    "enterprise_util.h"
+    "environment.cc"
+    "environment.h"
+    "export_template.h"
+    "feature_list.cc"
+    "feature_list.h"
+    "file_descriptor_store.cc"
+    "file_descriptor_store.h"
+    "file_version_info.h"
+    "files/dir_reader_fallback.h"
+    "files/file.cc"
+    "files/file.h"
+    "files/file_enumerator.cc"
+    "files/file_enumerator.h"
+    "files/file_path.cc"
+    "files/file_path.h"
+    "files/file_path_constants.cc"
+    "files/file_path_watcher.cc"
+    "files/file_path_watcher.h"
+    "files/file_proxy.cc"
+    "files/file_proxy.h"
+    "files/file_tracing.cc"
+    "files/file_tracing.h"
+    "files/file_util.cc"
+    "files/file_util.h"
+    "files/important_file_writer.cc"
+    "files/important_file_writer.h"
+    "files/memory_mapped_file.cc"
+    "files/memory_mapped_file.h"
+    "files/platform_file.h"
+    "files/scoped_file.cc"
+    "files/scoped_file.h"
+    "files/scoped_temp_dir.cc"
+    "files/scoped_temp_dir.h"
+    "format_macros.h"
+    "gtest_prod_util.h"
+    "guid.cc"
+    "guid.h"
+    "hash/hash.cc"
+    "hash/hash.h"
+    "immediate_crash.h"
+    "json/json_common.h"
+    "json/json_file_value_serializer.cc"
+    "json/json_file_value_serializer.h"
+    "json/json_parser.cc"
+    "json/json_parser.h"
+    "json/json_reader.cc"
+    "json/json_reader.h"
+    "json/json_string_value_serializer.cc"
+    "json/json_string_value_serializer.h"
+    "json/json_value_converter.cc"
+    "json/json_value_converter.h"
+    "json/json_writer.cc"
+    "json/json_writer.h"
+    "json/string_escape.cc"
+    "json/string_escape.h"
+    "lazy_instance.h"
+    "lazy_instance_helpers.cc"
+    "lazy_instance_helpers.h"
+    "linux_util.cc"
+    "linux_util.h"
+    "location.cc"
+    "location.h"
+    "logging.cc"
+    "logging.h"
+    "macros.h"
+    "memory/aligned_memory.cc"
+    "memory/aligned_memory.h"
+    "memory/discardable_memory.cc"
+    "memory/discardable_memory.h"
+    "memory/discardable_memory_allocator.cc"
+    "memory/discardable_memory_allocator.h"
+    "memory/discardable_memory_internal.h"
+    "memory/discardable_shared_memory.cc"
+    "memory/discardable_shared_memory.h"
+    "memory/free_deleter.h"
+    "memory/memory_pressure_listener.cc"
+    "memory/memory_pressure_listener.h"
+    "memory/memory_pressure_monitor.cc"
+    "memory/memory_pressure_monitor.h"
+    "memory/platform_shared_memory_region.cc"
+    "memory/platform_shared_memory_region.h"
+    "memory/ptr_util.h"
+    "memory/raw_scoped_refptr_mismatch_checker.h"
+    "memory/read_only_shared_memory_region.cc"
+    "memory/read_only_shared_memory_region.h"
+    "memory/ref_counted.cc"
+    "memory/ref_counted.h"
+    "memory/ref_counted_delete_on_sequence.h"
+    "memory/ref_counted_memory.cc"
+    "memory/ref_counted_memory.h"
+    "memory/scoped_policy.h"
+    "memory/scoped_refptr.h"
+    "memory/shared_memory_hooks.h"
+    "memory/shared_memory_mapping.cc"
+    "memory/shared_memory_mapping.h"
+    "memory/shared_memory_tracker.cc"
+    "memory/shared_memory_tracker.h"
+    "memory/singleton.h"
+    "memory/unsafe_shared_memory_region.cc"
+    "memory/unsafe_shared_memory_region.h"
+    "memory/weak_ptr.cc"
+    "memory/weak_ptr.h"
+    "memory/writable_shared_memory_region.cc"
+    "memory/writable_shared_memory_region.h"
+    "message_loop/message_loop.cc"
+    "message_loop/message_loop.h"
+    "message_loop/message_loop_current.cc"
+    "message_loop/message_loop_current.h"
+    "message_loop/message_pump.cc"
+    "message_loop/message_pump.h"
+    "message_loop/message_pump_default.cc"
+    "message_loop/message_pump_default.h"
+    "message_loop/message_pump_for_io.h"
+    "message_loop/message_pump_for_ui.h"
+    "message_loop/message_pump_type.h"
+    "message_loop/timer_slack.h"
+    "message_loop/work_id_provider.cc"
+    "message_loop/work_id_provider.h"
+    "metrics/bucket_ranges.cc"
+    "metrics/bucket_ranges.h"
+    "metrics/crc32.cc"
+    "metrics/crc32.h"
+    "metrics/dummy_histogram.cc"
+    "metrics/dummy_histogram.h"
+    "metrics/field_trial.cc"
+    "metrics/field_trial.h"
+    "metrics/field_trial_param_associator.cc"
+    "metrics/field_trial_param_associator.h"
+    "metrics/field_trial_params.cc"
+    "metrics/field_trial_params.h"
+    "metrics/histogram.cc"
+    "metrics/histogram.h"
+    "metrics/histogram_base.cc"
+    "metrics/histogram_base.h"
+    "metrics/histogram_delta_serialization.cc"
+    "metrics/histogram_delta_serialization.h"
+    "metrics/histogram_flattener.h"
+    "metrics/histogram_functions.cc"
+    "metrics/histogram_functions.h"
+    "metrics/histogram_macros.h"
+    "metrics/histogram_macros_internal.h"
+    "metrics/histogram_macros_local.h"
+    "metrics/histogram_samples.cc"
+    "metrics/histogram_samples.h"
+    "metrics/histogram_snapshot_manager.cc"
+    "metrics/histogram_snapshot_manager.h"
+    "metrics/metrics_hashes.cc"
+    "metrics/metrics_hashes.h"
+    "metrics/persistent_histogram_allocator.cc"
+    "metrics/persistent_histogram_allocator.h"
+    "metrics/persistent_memory_allocator.cc"
+    "metrics/persistent_memory_allocator.h"
+    "metrics/persistent_sample_map.cc"
+    "metrics/persistent_sample_map.h"
+    "metrics/record_histogram_checker.h"
+    "metrics/sample_map.cc"
+    "metrics/sample_map.h"
+    "metrics/sample_vector.cc"
+    "metrics/sample_vector.h"
+    "metrics/single_sample_metrics.cc"
+    "metrics/single_sample_metrics.h"
+    "metrics/sparse_histogram.cc"
+    "metrics/sparse_histogram.h"
+    "metrics/statistics_recorder.cc"
+    "metrics/statistics_recorder.h"
+    "metrics/ukm_source_id.cc"
+    "metrics/ukm_source_id.h"
+    "metrics/user_metrics.cc"
+    "metrics/user_metrics.h"
+    "metrics/user_metrics_action.h"
+    "native_library.cc"
+    "native_library.h"
+    "no_destructor.h"
+    "observer_list.h"
+    "observer_list_internal.cc"
+    "observer_list_internal.h"
+    "observer_list_threadsafe.cc"
+    "observer_list_threadsafe.h"
+    "observer_list_types.cc"
+    "observer_list_types.h"
+    "one_shot_event.cc"
+    "one_shot_event.h"
+    "optional.h"
+    "parameter_pack.h"
+    "path_service.cc"
+    "path_service.h"
+    "pending_task.cc"
+    "pending_task.h"
+    "pickle.cc"
+    "pickle.h"
+    "post_task_and_reply_with_result_internal.h"
+    "power_monitor/power_monitor.cc"
+    "power_monitor/power_monitor.h"
+    "power_monitor/power_monitor_device_source.cc"
+    "power_monitor/power_monitor_device_source.h"
+    "power_monitor/power_monitor_source.cc"
+    "power_monitor/power_monitor_source.h"
+    "power_monitor/power_observer.h"
+    "process/environment_internal.cc"
+    "process/environment_internal.h"
+    "process/kill.cc"
+    "process/kill.h"
+    "process/launch.cc"
+    "process/launch.h"
+    "process/memory.cc"
+    "process/memory.h"
+    "process/process.h"
+    "process/process_handle.cc"
+    "process/process_handle.h"
+    "process/process_info.h"
+    "process/process_iterator.cc"
+    "process/process_iterator.h"
+    "process/process_metrics.cc"
+    "process/process_metrics.h"
+    "profiler/arm_cfi_table.cc"
+    "profiler/arm_cfi_table.h"
+    "profiler/frame.cc"
+    "profiler/frame.h"
+    "profiler/metadata_recorder.cc"
+    "profiler/metadata_recorder.h"
+    "profiler/native_unwinder.h"
+    "profiler/profile_builder.cc"
+    "profiler/profile_builder.h"
+    "profiler/register_context.h"
+    "profiler/sample_metadata.cc"
+    "profiler/sample_metadata.h"
+    "profiler/sampling_profiler_thread_token.cc"
+    "profiler/sampling_profiler_thread_token.h"
+    "profiler/stack_buffer.cc"
+    "profiler/stack_buffer.h"
+    "profiler/stack_copier.cc"
+    "profiler/stack_copier.h"
+    "profiler/stack_copier_suspend.cc"
+    "profiler/stack_copier_suspend.h"
+    "profiler/stack_sampler.cc"
+    "profiler/stack_sampler.h"
+    "profiler/stack_sampler_impl.cc"
+    "profiler/stack_sampler_impl.h"
+    "profiler/stack_sampling_profiler.cc"
+    "profiler/stack_sampling_profiler.h"
+    "profiler/suspendable_thread_delegate.h"
+    "profiler/thread_delegate.h"
+    "profiler/unwinder.h"
+    "rand_util.cc"
+    "rand_util.h"
+    "run_loop.cc"
+    "run_loop.h"
+    "sampling_heap_profiler/lock_free_address_hash_set.cc"
+    "sampling_heap_profiler/lock_free_address_hash_set.h"
+    "sampling_heap_profiler/module_cache.cc"
+    "sampling_heap_profiler/module_cache.h"
+    "sampling_heap_profiler/poisson_allocation_sampler.cc"
+    "sampling_heap_profiler/poisson_allocation_sampler.h"
+    "sampling_heap_profiler/sampling_heap_profiler.cc"
+    "sampling_heap_profiler/sampling_heap_profiler.h"
+    "scoped_clear_last_error.h"
+    "scoped_generic.h"
+    "scoped_native_library.cc"
+    "scoped_native_library.h"
+    "scoped_observer.h"
+    "sequence_checker.h"
+    "sequence_checker_impl.cc"
+    "sequence_checker_impl.h"
+    "sequence_token.cc"
+    "sequence_token.h"
+    "sequenced_task_runner.cc"
+    "sequenced_task_runner.h"
+    "sequenced_task_runner_helpers.h"
+    "single_thread_task_runner.h"
+    "stl_util.h"
+    "strings/char_traits.h"
+    "strings/latin1_string_conversions.cc"
+    "strings/latin1_string_conversions.h"
+    "strings/nullable_string16.cc"
+    "strings/nullable_string16.h"
+    "strings/pattern.cc"
+    "strings/pattern.h"
+    "strings/safe_sprintf.cc"
+    "strings/safe_sprintf.h"
+    "strings/strcat.cc"
+    "strings/strcat.h"
+    "strings/string16.cc"
+    "strings/string16.h"
+    "strings/string_number_conversions.cc"
+    "strings/string_number_conversions.h"
+    "strings/string_piece.cc"
+    "strings/string_piece.h"
+    "strings/string_piece_forward.h"
+    "strings/string_split.cc"
+    "strings/string_split.h"
+    "strings/string_tokenizer.h"
+    "strings/string_util.cc"
+    "strings/string_util.h"
+    "strings/string_util_constants.cc"
+    "strings/stringize_macros.h"
+    "strings/stringprintf.cc"
+    "strings/stringprintf.h"
+    "strings/sys_string_conversions.h"
+    "strings/utf_offset_string_conversions.cc"
+    "strings/utf_offset_string_conversions.h"
+    "strings/utf_string_conversion_utils.cc"
+    "strings/utf_string_conversion_utils.h"
+    "strings/utf_string_conversions.cc"
+    "strings/utf_string_conversions.h"
+    "supports_user_data.cc"
+    "supports_user_data.h"
+    "sync_socket.h"
+    "synchronization/atomic_flag.cc"
+    "synchronization/atomic_flag.h"
+    "synchronization/condition_variable.h"
+    "synchronization/lock.cc"
+    "synchronization/lock.h"
+    "synchronization/lock_impl.h"
+    "synchronization/waitable_event.h"
+    "synchronization/waitable_event_watcher.h"
+    "sys_byteorder.h"
+    "syslog_logging.cc"
+    "syslog_logging.h"
+    "system/sys_info.cc"
+    "system/sys_info.h"
+    "system/sys_info_internal.h"
+    "system/system_monitor.cc"
+    "system/system_monitor.h"
+    "task/cancelable_task_tracker.cc"
+    "task/cancelable_task_tracker.h"
+    "task/common/checked_lock.h"
+    "task/common/checked_lock_impl.cc"
+    "task/common/checked_lock_impl.h"
+    "task/common/intrusive_heap.h"
+    "task/common/operations_controller.cc"
+    "task/common/operations_controller.h"
+    "task/common/scoped_defer_task_posting.cc"
+    "task/common/scoped_defer_task_posting.h"
+    "task/common/task_annotator.cc"
+    "task/common/task_annotator.h"
+    "task/lazy_task_runner.cc"
+    "task/lazy_task_runner.h"
+    "task/post_job.cc"
+    "task/post_job.h"
+    "task/post_task.cc"
+    "task/post_task.h"
+    "task/scoped_set_task_priority_for_current_thread.cc"
+    "task/scoped_set_task_priority_for_current_thread.h"
+    "task/sequence_manager/associated_thread_id.cc"
+    "task/sequence_manager/associated_thread_id.h"
+    "task/sequence_manager/atomic_flag_set.cc"
+    "task/sequence_manager/atomic_flag_set.h"
+    "task/sequence_manager/enqueue_order.h"
+    "task/sequence_manager/enqueue_order_generator.cc"
+    "task/sequence_manager/enqueue_order_generator.h"
+    "task/sequence_manager/lazily_deallocated_deque.h"
+    "task/sequence_manager/lazy_now.cc"
+    "task/sequence_manager/lazy_now.h"
+    "task/sequence_manager/real_time_domain.cc"
+    "task/sequence_manager/real_time_domain.h"
+    "task/sequence_manager/sequence_manager.cc"
+    "task/sequence_manager/sequence_manager.h"
+    "task/sequence_manager/sequence_manager_impl.cc"
+    "task/sequence_manager/sequence_manager_impl.h"
+    "task/sequence_manager/sequenced_task_source.h"
+    "task/sequence_manager/task_queue.cc"
+    "task/sequence_manager/task_queue.h"
+    "task/sequence_manager/task_queue_impl.cc"
+    "task/sequence_manager/task_queue_impl.h"
+    "task/sequence_manager/task_queue_selector.cc"
+    "task/sequence_manager/task_queue_selector.h"
+    "task/sequence_manager/task_queue_selector_logic.h"
+    "task/sequence_manager/task_time_observer.h"
+    "task/sequence_manager/tasks.cc"
+    "task/sequence_manager/tasks.h"
+    "task/sequence_manager/thread_controller.h"
+    "task/sequence_manager/thread_controller_impl.cc"
+    "task/sequence_manager/thread_controller_impl.h"
+    "task/sequence_manager/thread_controller_with_message_pump_impl.cc"
+    "task/sequence_manager/thread_controller_with_message_pump_impl.h"
+    "task/sequence_manager/time_domain.cc"
+    "task/sequence_manager/time_domain.h"
+    "task/sequence_manager/work_deduplicator.cc"
+    "task/sequence_manager/work_deduplicator.h"
+    "task/sequence_manager/work_queue.cc"
+    "task/sequence_manager/work_queue.h"
+    "task/sequence_manager/work_queue_sets.cc"
+    "task/sequence_manager/work_queue_sets.h"
+    "task/simple_task_executor.cc"
+    "task/simple_task_executor.h"
+    "task/single_thread_task_executor.cc"
+    "task/single_thread_task_executor.h"
+    "task/single_thread_task_runner_thread_mode.h"
+    "task/task_executor.cc"
+    "task/task_executor.h"
+    "task/task_features.cc"
+    "task/task_features.h"
+    "task/task_observer.h"
+    "task/task_traits.cc"
+    "task/task_traits.h"
+    "task/task_traits_extension.h"
+    "task/thread_pool/delayed_task_manager.cc"
+    "task/thread_pool/delayed_task_manager.h"
+    "task/thread_pool/environment_config.cc"
+    "task/thread_pool/environment_config.h"
+    "task/thread_pool/initialization_util.cc"
+    "task/thread_pool/initialization_util.h"
+    "task/thread_pool/job_task_source.cc"
+    "task/thread_pool/job_task_source.h"
+    "task/thread_pool/pooled_parallel_task_runner.cc"
+    "task/thread_pool/pooled_parallel_task_runner.h"
+    "task/thread_pool/pooled_sequenced_task_runner.cc"
+    "task/thread_pool/pooled_sequenced_task_runner.h"
+    "task/thread_pool/pooled_single_thread_task_runner_manager.cc"
+    "task/thread_pool/pooled_single_thread_task_runner_manager.h"
+    "task/thread_pool/pooled_task_runner_delegate.cc"
+    "task/thread_pool/pooled_task_runner_delegate.h"
+    "task/thread_pool/priority_queue.cc"
+    "task/thread_pool/priority_queue.h"
+    "task/thread_pool/sequence.cc"
+    "task/thread_pool/sequence.h"
+    "task/thread_pool/sequence_sort_key.cc"
+    "task/thread_pool/sequence_sort_key.h"
+    "task/thread_pool/service_thread.cc"
+    "task/thread_pool/service_thread.h"
+    "task/thread_pool/task.cc"
+    "task/thread_pool/task.h"
+    "task/thread_pool/task_source.cc"
+    "task/thread_pool/task_source.h"
+    "task/thread_pool/task_tracker.cc"
+    "task/thread_pool/task_tracker.h"
+    "task/thread_pool/thread_group.cc"
+    "task/thread_pool/thread_group.h"
+    "task/thread_pool/thread_group_impl.cc"
+    "task/thread_pool/thread_group_impl.h"
+    "task/thread_pool/thread_group_native.cc"
+    "task/thread_pool/thread_group_native.h"
+    "task/thread_pool/thread_pool_impl.cc"
+    "task/thread_pool/thread_pool_impl.h"
+    "task/thread_pool/thread_pool_instance.cc"
+    "task/thread_pool/thread_pool_instance.h"
+    "task/thread_pool/tracked_ref.h"
+    "task/thread_pool/worker_thread.cc"
+    "task/thread_pool/worker_thread.h"
+    "task/thread_pool/worker_thread_observer.h"
+    "task/thread_pool/worker_thread_stack.cc"
+    "task/thread_pool/worker_thread_stack.h"
+    "task_runner.cc"
+    "task_runner.h"
+    "task_runner_util.h"
+    "template_util.h"
+    "test/malloc_wrapper.h"
+    "test/spin_wait.h"
+    "third_party/cityhash/city.cc"
+    "third_party/cityhash/city.h"
+    "third_party/icu/icu_utf.cc"
+    "third_party/icu/icu_utf.h"
+    "third_party/nspr/prtime.cc"
+    "third_party/nspr/prtime.h"
+    "third_party/superfasthash/superfasthash.c"
+    "thread_annotations.h"
+    "threading/platform_thread.cc"
+    "threading/platform_thread.h"
+    "threading/post_task_and_reply_impl.cc"
+    "threading/post_task_and_reply_impl.h"
+    "threading/scoped_blocking_call.cc"
+    "threading/scoped_blocking_call.h"
+    "threading/scoped_thread_priority.cc"
+    "threading/scoped_thread_priority.h"
+    "threading/sequence_bound.h"
+    "threading/sequence_local_storage_map.cc"
+    "threading/sequence_local_storage_map.h"
+    "threading/sequence_local_storage_slot.cc"
+    "threading/sequence_local_storage_slot.h"
+    "threading/sequenced_task_runner_handle.cc"
+    "threading/sequenced_task_runner_handle.h"
+    "threading/simple_thread.cc"
+    "threading/simple_thread.h"
+    "threading/thread.cc"
+    "threading/thread.h"
+    "threading/thread_checker.h"
+    "threading/thread_checker_impl.cc"
+    "threading/thread_checker_impl.h"
+    "threading/thread_collision_warner.cc"
+    "threading/thread_collision_warner.h"
+    "threading/thread_id_name_manager.cc"
+    "threading/thread_id_name_manager.h"
+    "threading/thread_local.h"
+    "threading/thread_local_internal.h"
+    "threading/thread_local_storage.cc"
+    "threading/thread_local_storage.h"
+    "threading/thread_restrictions.cc"
+    "threading/thread_restrictions.h"
+    "threading/thread_task_runner_handle.cc"
+    "threading/thread_task_runner_handle.h"
+    "threading/watchdog.cc"
+    "threading/watchdog.h"
+    "time/clock.cc"
+    "time/clock.h"
+    "time/default_clock.cc"
+    "time/default_clock.h"
+    "time/default_tick_clock.cc"
+    "time/default_tick_clock.h"
+    "time/tick_clock.cc"
+    "time/tick_clock.h"
+    "time/time.cc"
+    "time/time.h"
+    "time/time_override.cc"
+    "time/time_override.h"
+    "time/time_to_iso8601.cc"
+    "time/time_to_iso8601.h"
+    "timer/elapsed_timer.cc"
+    "timer/elapsed_timer.h"
+    "timer/hi_res_timer_manager.h"
+    "timer/lap_timer.cc"
+    "timer/lap_timer.h"
+    "timer/timer.cc"
+    "timer/timer.h"
+    "token.cc"
+    "token.h"
+    "trace_event/auto_open_close_event.h"
+    "trace_event/blame_context.cc"
+    "trace_event/blame_context.h"
+    "trace_event/builtin_categories.cc"
+    "trace_event/builtin_categories.h"
+    "trace_event/category_registry.cc"
+    "trace_event/category_registry.h"
+    "trace_event/common/trace_event_common.h"
+    "trace_event/event_name_filter.cc"
+    "trace_event/event_name_filter.h"
+    "trace_event/heap_profiler.h"
+    "trace_event/heap_profiler_allocation_context.cc"
+    "trace_event/heap_profiler_allocation_context.h"
+    "trace_event/heap_profiler_allocation_context_tracker.cc"
+    "trace_event/heap_profiler_allocation_context_tracker.h"
+    "trace_event/heap_profiler_event_filter.cc"
+    "trace_event/heap_profiler_event_filter.h"
+    "trace_event/log_message.cc"
+    "trace_event/log_message.h"
+    "trace_event/malloc_dump_provider.cc"
+    "trace_event/malloc_dump_provider.h"
+    "trace_event/memory_allocator_dump.cc"
+    "trace_event/memory_allocator_dump.h"
+    "trace_event/memory_allocator_dump_guid.cc"
+    "trace_event/memory_allocator_dump_guid.h"
+    "trace_event/memory_dump_manager.cc"
+    "trace_event/memory_dump_manager.h"
+    "trace_event/memory_dump_manager_test_utils.h"
+    "trace_event/memory_dump_provider.h"
+    "trace_event/memory_dump_provider_info.cc"
+    "trace_event/memory_dump_provider_info.h"
+    "trace_event/memory_dump_request_args.cc"
+    "trace_event/memory_dump_request_args.h"
+    "trace_event/memory_dump_scheduler.cc"
+    "trace_event/memory_dump_scheduler.h"
+    "trace_event/memory_infra_background_whitelist.cc"
+    "trace_event/memory_infra_background_whitelist.h"
+    "trace_event/memory_usage_estimator.cc"
+    "trace_event/memory_usage_estimator.h"
+    "trace_event/process_memory_dump.cc"
+    "trace_event/process_memory_dump.h"
+    "trace_event/thread_instruction_count.cc"
+    "trace_event/thread_instruction_count.h"
+    "trace_event/trace_arguments.cc"
+    "trace_event/trace_arguments.h"
+    "trace_event/trace_buffer.cc"
+    "trace_event/trace_buffer.h"
+    "trace_event/trace_category.h"
+    "trace_event/trace_config.cc"
+    "trace_event/trace_config.h"
+    "trace_event/trace_config_category_filter.cc"
+    "trace_event/trace_config_category_filter.h"
+    "trace_event/trace_event.h"
+    "trace_event/trace_event_filter.cc"
+    "trace_event/trace_event_filter.h"
+    "trace_event/trace_event_impl.cc"
+    "trace_event/trace_event_impl.h"
+    "trace_event/trace_event_memory_overhead.cc"
+    "trace_event/trace_event_memory_overhead.h"
+    "trace_event/trace_log.cc"
+    "trace_event/trace_log.h"
+    "trace_event/trace_log_constants.cc"
+    "trace_event/traced_value.cc"
+    "trace_event/traced_value.h"
+    "trace_event/tracing_agent.cc"
+    "trace_event/tracing_agent.h"
+    "traits_bag.h"
+    "tuple.h"
+    "unguessable_token.cc"
+    "unguessable_token.h"
+    "updateable_sequenced_task_runner.h"
+    "value_conversions.cc"
+    "value_conversions.h"
+    "value_iterators.cc"
+    "value_iterators.h"
+    "values.cc"
+    "values.h"
+    "version.cc"
+    "version.h"
+    "vlog.cc"
+    "vlog.h"
+	"base_paths.cc"
+    "base_paths.h"
+    "metrics/persistent_histogram_storage.cc"
+    "metrics/persistent_histogram_storage.h"
+	"hash/md5_boringssl.cc"
+    "hash/md5_boringssl.h"
+    "hash/sha1_boringssl.cc"
+	"hash/md5.h"
+    "hash/md5_constexpr.h"
+    "hash/md5_constexpr_internal.h"
+    "hash/sha1.h"
+	"files/file_enumerator_win.cc"
+      "memory/platform_shared_memory_region_win.cc"
+      "power_monitor/power_monitor_device_source_win.cc"
+      "profiler/win32_stack_frame_unwinder.cc"
+      "profiler/win32_stack_frame_unwinder.h"
+      "rand_util_win.cc"
+      "system/sys_info_win.cc"
+      "time/time_win.cc"
+	  "base_switches.cc"
+    "base_switches.h")
 
 
-FILE (GLOB header_files *.h)
-FILE (GLOB source_files *.cc)
-#移除单元测试
-file(GLOB source_to_remove *unittest*)
-list(REMOVE_ITEM source_files ${source_to_remove})
-list(REMOVE_ITEM source_files "${CMAKE_CURRENT_SOURCE_DIR}/observer_list_perftest.cc")
-list(REMOVE_ITEM source_files "${CMAKE_CURRENT_SOURCE_DIR}/os_compat_nacl.cc")
-list(REMOVE_ITEM source_files "${CMAKE_CURRENT_SOURCE_DIR}/pickle_fuzzer.cc")
-list(REMOVE_ITEM source_files "${CMAKE_CURRENT_SOURCE_DIR}/rand_util_nacl.cc")
-list(REMOVE_ITEM source_files "${CMAKE_CURRENT_SOURCE_DIR}/sync_socket_nacl.cc")
+FILE (GLOB i18n  "i18n/base_i18n_export.h"
+    "i18n/base_i18n_switches.cc"
+    "i18n/base_i18n_switches.h"
+    "i18n/break_iterator.cc"
+    "i18n/break_iterator.h"
+    "i18n/case_conversion.cc"
+    "i18n/case_conversion.h"
+    "i18n/char_iterator.cc"
+    "i18n/char_iterator.h"
+    "i18n/character_encoding.cc"
+    "i18n/character_encoding.h"
+    "i18n/encoding_detection.cc"
+    "i18n/encoding_detection.h"
+    "i18n/file_util_icu.cc"
+    "i18n/file_util_icu.h"
+    "i18n/i18n_constants.cc"
+    "i18n/i18n_constants.h"
+    "i18n/icu_string_conversions.cc"
+    "i18n/icu_string_conversions.h"
+    "i18n/icu_util.cc"
+    "i18n/icu_util.h"
+    "i18n/message_formatter.cc"
+    "i18n/message_formatter.h"
+    "i18n/number_formatting.cc"
+    "i18n/number_formatting.h"
+    "i18n/rtl.cc"
+    "i18n/rtl.h"
+    "i18n/streaming_utf8_validator.cc"
+    "i18n/streaming_utf8_validator.h"
+    "i18n/string_compare.cc"
+    "i18n/string_compare.h"
+    "i18n/string_search.cc"
+    "i18n/string_search.h"
+    "i18n/time_formatting.cc"
+    "i18n/time_formatting.h"
+    "i18n/timezone.cc"
+    "i18n/timezone.h"
+    "i18n/unicodestring.h"
+    "i18n/utf8_validator_tables.cc"
+    "i18n/utf8_validator_tables.h")
 
-FILE (GLOB memory memory/*.h memory/*.cc)
-SOURCE_GROUP("memory" FILES ${memory})
-#message(${memory})
-
-FILE (GLOB hash hash/*.h hash/*.cc)
-SOURCE_GROUP("hash" FILES ${hash})
-list(REMOVE_ITEM hash "${CMAKE_CURRENT_SOURCE_DIR}/hash/sha1_perftest.cc")
-#移除单元测试
-file(GLOB hash_to_remove hash/*unittest*)
-list(REMOVE_ITEM hash ${hash_to_remove})
-
-FILE (GLOB debug debug/*.h debug/*.cc)
-SOURCE_GROUP("debug" FILES ${debug})
-#生成 debug/debugging_buildflags.h
-INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/debugging_buildflags.cmake")
-#移除单元测试
-file(GLOB debug_to_remove debug/*unittest*)
-list(REMOVE_ITEM debug ${debug_to_remove})
-
-
-#time 目录
-FILE (GLOB time time/*.h time/*.cc)
-SOURCE_GROUP("time" FILES ${time})
-#移除单元测试
-file(GLOB time_to_remove time/*unittest*)
-list(REMOVE_ITEM time ${time_to_remove})
-
-#metrics 目录
-FILE (GLOB metrics metrics/*.h metrics/*.cc)
-SOURCE_GROUP("metrics" FILES ${metrics})
-#移除单元测试
-file(GLOB metrics_to_remove metrics/*unittest*)
-list(REMOVE_ITEM metrics ${metrics_to_remove})
-
-#strings 目录
-FILE (GLOB strings strings/*.h strings/*.cc)
-SOURCE_GROUP("strings" FILES ${strings})
-#移除单元测试
-file(GLOB strings_to_remove strings/*unittest*)
-list(REMOVE_ITEM strings ${strings_to_remove})
-list(REMOVE_ITEM strings "${CMAKE_CURRENT_SOURCE_DIR}/strings/string_util_perftest.cc")
-
-FILE (GLOB third_party_cityhash third_party/cityhash/*.h third_party/cityhash/*.cc)
-SOURCE_GROUP("third_party\\cityhash" FILES ${third_party_cityhash})
-
-FILE (GLOB third_party_superfasthash third_party/superfasthash/*.h third_party/superfasthash/*.cc third_party/superfasthash/*.c)
-SOURCE_GROUP("third_party\\superfasthash" FILES ${third_party_superfasthash})
-
-
-
-FILE (GLOB_RECURSE third_party_double_conversion third_party/double_conversion/*.h third_party/double_conversion/*.cc)
-SOURCE_GROUP("third_party\\double_conversion" FILES ${third_party_double_conversion})
-
-
-FILE (GLOB third_party_icu third_party/icu/*.h third_party/icu/*.cc)
-SOURCE_GROUP("third_party\\icu" FILES ${third_party_icu})
-
+SOURCE_GROUP("i18n" FILES ${i18n})
 
 FILE (GLOB_RECURSE third_party_icu_source_common third_party/icu/source/common/*.h third_party/icu/source/common/*.cpp)
 SOURCE_GROUP("third_party\\icu\\source\\common" FILES ${third_party_icu_source_common})
@@ -103,382 +786,161 @@ SOURCE_GROUP("third_party\\icu\\source\\i18n" FILES ${third_party_icu_source_i18
 
 
 
-FILE (GLOB threading threading/*.h threading/*.cc)
-SOURCE_GROUP("threading" FILES ${threading})
-list(REMOVE_ITEM threading "${CMAKE_CURRENT_SOURCE_DIR}/threading/thread_local_storage_perftest.cc")
-list(REMOVE_ITEM threading "${CMAKE_CURRENT_SOURCE_DIR}/threading/thread_perftest.cc")
-#移除单元测试
-file(GLOB threading_to_remove threading/*unittest*)
-list(REMOVE_ITEM threading ${threading_to_remove})
-
-FILE (GLOB synchronization synchronization/*.h synchronization/*.cc)
-SOURCE_GROUP("synchronization" FILES ${synchronization})
-list(REMOVE_ITEM synchronization "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/waitable_event_perftest.cc")
-#移除单元测试
-file(GLOB synchronization_to_remove synchronization/*unittest*)
-list(REMOVE_ITEM synchronization ${synchronization_to_remove})
-
-
-FILE (GLOB third_party_nspr third_party/nspr/*.h third_party/nspr/*.cc)
-SOURCE_GROUP("third_party\\nspr" FILES ${third_party_nspr})
-
-FILE (GLOB containers containers/*.h containers/*.cc)
-SOURCE_GROUP("containers" FILES ${containers})
-#移除单元测试
-file(GLOB containers_to_remove containers/*unittest*)
-list(REMOVE_ITEM containers ${containers_to_remove})
-
-
-FILE (GLOB files files/*.h files/*.cc)
-SOURCE_GROUP("files" FILES ${files})
-#移除单元测试
-file(GLOB files_to_remove files/*unittest*)
-list(REMOVE_ITEM files ${files_to_remove})
-
-FILE (GLOB i18n i18n/*.h i18n/*.cc)
-SOURCE_GROUP("i18n" FILES ${i18n})
-#移除单元测试
-file(GLOB i18n_to_remove i18n/*unittest*)
-list(REMOVE_ITEM i18n ${i18n_to_remove})
-list(REMOVE_ITEM i18n "${CMAKE_CURRENT_SOURCE_DIR}/i18n/streaming_utf8_validator_perftest.cc")
-
-FILE (GLOB timer timer/*.h timer/*.cc)
-SOURCE_GROUP("timer" FILES ${timer})
-#移除单元测试
-file(GLOB timer_to_remove timer/*unittest*)
-list(REMOVE_ITEM timer ${timer_to_remove})
-
-FILE (GLOB_RECURSE util util/*.h util/*.cc)
-SOURCE_GROUP("util" FILES ${util})
-#移除单元测试
-file(GLOB_RECURSE util_to_remove util/*unittest*)
-list(REMOVE_ITEM util ${util_to_remove})
-
-FILE (GLOB_RECURSE trace_event trace_event/*.h trace_event/*.cc)
-SOURCE_GROUP("trace_event" FILES ${trace_event})
-#移除单元测试
-file(GLOB_RECURSE trace_event_to_remove trace_event/*unittest*)
-list(REMOVE_ITEM trace_event ${trace_event_to_remove})
-list(REMOVE_ITEM trace_event "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/trace_event_filter_test_utils.cc")
-list(REMOVE_ITEM trace_event "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/trace_event_filter_test_utils.h")
-list(REMOVE_ITEM trace_event "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/trace_event_etw_export_win.cc")
-list(REMOVE_ITEM trace_event "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/trace_event_etw_export_win.h")
-
-
-
-FILE (GLOB_RECURSE system system/*.h system/*.cc)
-SOURCE_GROUP("system" FILES ${system})
-#移除单元测试
-file(GLOB_RECURSE system_to_remove system/*unittest*)
-list(REMOVE_ITEM system ${system_to_remove})
-
-FILE (GLOB_RECURSE allocator allocator/*.h allocator/*.cc)
-SOURCE_GROUP("allocator" FILES ${allocator})
-#移除单元测试
-file(GLOB_RECURSE allocator_to_remove allocator/*unittest*)
-list(REMOVE_ITEM allocator ${allocator_to_remove})
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/partition_allocator/spin_lock_perftest.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/partition_allocator/partition_alloc_perftest.cc")
-#不适用 shim
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_internals.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_override_cpp_symbols.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_override_cpp_symbols.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_default_dispatch_to_tcmalloc.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_override_glibc_weak_symbols.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_default_dispatch_to_mac_zoned_malloc.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_default_dispatch_to_mac_zoned_malloc.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_override_mac_symbols.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_override_linker_wrapped_symbols.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_default_dispatch_to_winheap.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_default_dispatch_to_glibc.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_shim_override_ucrt_symbols_win.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/winheap_stubs_win.cc")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/winheap_stubs_win.h")
-list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/debugallocation_shim.cc")
-
-
-#profiler
-FILE (GLOB_RECURSE profiler profiler/*.h profiler/*.cc)
-SOURCE_GROUP("profiler" FILES ${profiler})
-#移除单元测试
-file(GLOB_RECURSE profiler_to_remove profiler/*unittest*)
-list(REMOVE_ITEM profiler ${profiler_to_remove})
-list(REMOVE_ITEM profiler "${CMAKE_CURRENT_SOURCE_DIR}/profiler/stack_sampling_profiler_test_util.h")
-list(REMOVE_ITEM profiler "${CMAKE_CURRENT_SOURCE_DIR}/profiler/stack_sampling_profiler_test_util.cc")
-
-
-#process
-FILE (GLOB_RECURSE process process/*.h process/*.cc)
-SOURCE_GROUP("process" FILES ${process})
-#移除单元测试
-file(GLOB_RECURSE process_to_remove process/*unittest*)
-list(REMOVE_ITEM process ${process_to_remove})
-
-
-#power_monitor
-FILE (GLOB_RECURSE power_monitor power_monitor/*.h power_monitor/*.cc)
-SOURCE_GROUP("power_monitor" FILES ${power_monitor})
-#移除单元测试
-file(GLOB_RECURSE power_monitor_to_remove power_monitor/*unittest*)
-list(REMOVE_ITEM power_monitor ${power_monitor_to_remove})
-list(REMOVE_ITEM power_monitor "${CMAKE_CURRENT_SOURCE_DIR}/power_monitor/power_monitor_device_source_stub.cc")
-
-
-#numerics
-FILE (GLOB_RECURSE numerics numerics/*.h numerics/*.cc)
-SOURCE_GROUP("numerics" FILES ${numerics})
-
-
-
-#json
-FILE (GLOB_RECURSE json json/*.h json/*.cc)
-SOURCE_GROUP("json" FILES ${json})
-#移除单元测试
-file(GLOB_RECURSE json_to_remove json/*unittest*)
-list(REMOVE_ITEM json ${json_to_remove})
-list(REMOVE_ITEM json "${CMAKE_CURRENT_SOURCE_DIR}/json/json_perftest.cc")
-
-
-#message_loop
-FILE (GLOB_RECURSE message_loop message_loop/*.h message_loop/*.cc)
-SOURCE_GROUP("message_loop" FILES ${message_loop})
-#移除单元测试
-file(GLOB_RECURSE message_loop_to_remove message_loop/*unittest*)
-list(REMOVE_ITEM message_loop ${message_loop_to_remove})
-list(REMOVE_ITEM message_loop "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_perftest.cc")
-
-
-#memory
-FILE (GLOB_RECURSE memory memory/*.h memory/*.cc)
-SOURCE_GROUP("memory" FILES ${memory})
-#移除单元测试
-file(GLOB_RECURSE memory_to_remove memory/*unittest*)
-list(REMOVE_ITEM memory ${memory_to_remove})
-
-#task
-FILE (GLOB_RECURSE task task/*.h task/*.cc)
-SOURCE_GROUP("task" FILES ${task})
-#移除单元测试
-file(GLOB_RECURSE task_to_remove task/*unittest*)
-list(REMOVE_ITEM task ${task_to_remove})
-#移除test目录
-file(GLOB task_test_to_remove task/sequence_manager/test/*.*)
-list(REMOVE_ITEM task ${task_test_to_remove})
-
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/sequence_manager/sequence_manager_perftest.cc")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/thread_pool/thread_pool_perftest.cc")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/thread_pool/test_utils.cc")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/thread_pool/test_utils.h")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/thread_pool/test_task_factory.cc")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/thread_pool/test_task_factory.h")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/sequence_manager/test_task_queue.h")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/sequence_manager/test_task_queue.cc")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/test_task_traits_extension.h")
-list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/test_task_traits_extension.cc")
 
 
 if (WIN32)  
-    list(REMOVE_ITEM memory "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_allocator_posix.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_allocator_posix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_posix.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_posix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_mac.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_fuchsia.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_posix.cc")
+    list(APPEND source_files "debug/close_handle_hook_win.cc"
+      "debug/close_handle_hook_win.h"
+      "debug/debugger_win.cc"
+      "debug/gdi_debug_util_win.cc"
+      "debug/gdi_debug_util_win.h"
+      "debug/invalid_access_win.cc"
+      "debug/invalid_access_win.h"
+      "debug/stack_trace_win.cc"
+      "enterprise_util_win.cc"
+      "file_version_info_win.cc"
+      "file_version_info_win.h"
+      "files/file_path_watcher_win.cc"
+      "files/file_util_win.cc"
+      "files/file_win.cc"
+      "files/memory_mapped_file_win.cc"
+      "logging_win.cc"
+      "logging_win.h"
+      "message_loop/message_pump_win.cc"
+      "message_loop/message_pump_win.h"
+      "native_library_win.cc"
+      "process/kill_win.cc"
+      "process/launch_win.cc"
+      "process/memory_win.cc"
+      "process/process_handle_win.cc"
+      "process/process_info_win.cc"
+      "process/process_iterator_win.cc"
+      "process/process_metrics_win.cc"
+      "process/process_win.cc"
+      "profiler/native_unwinder_win.cc"
+      "profiler/native_unwinder_win.h"
+      "profiler/stack_sampler_win.cc"
+      "profiler/suspendable_thread_delegate_win.cc"
+      "profiler/suspendable_thread_delegate_win.h"
+      "sampling_heap_profiler/module_cache_win.cc"
+      "scoped_clear_last_error_win.cc"
+      "strings/string_util_win.h"
+      "strings/sys_string_conversions_win.cc"
+      "sync_socket_win.cc"
+      "synchronization/condition_variable_win.cc"
+      "synchronization/lock_impl_win.cc"
+      "synchronization/waitable_event_watcher_win.cc"
+      "synchronization/waitable_event_win.cc"
+      "task/thread_pool/thread_group_native_win.cc"
+      "task/thread_pool/thread_group_native_win.h"
+      "threading/platform_thread_win.cc"
+      "threading/platform_thread_win.h"
+      "threading/thread_local_storage_win.cc"
+      "timer/hi_res_timer_manager_win.cc"
+      "win/async_operation.h"
+      "win/atl.h"
+      "win/com_init_check_hook.cc"
+      "win/com_init_check_hook.h"
+      "win/com_init_util.cc"
+      "win/com_init_util.h"
+      "win/core_winrt_util.cc"
+      "win/core_winrt_util.h"
+      "win/current_module.h"
+      "win/embedded_i18n/language_selector.cc"
+      "win/embedded_i18n/language_selector.h"
+      "win/enum_variant.cc"
+      "win/enum_variant.h"
+      "win/event_trace_consumer.h"
+      "win/event_trace_controller.cc"
+      "win/event_trace_controller.h"
+      "win/event_trace_provider.cc"
+      "win/event_trace_provider.h"
+      "win/hstring_compare.cc"
+      "win/hstring_compare.h"
+      "win/hstring_reference.cc"
+      "win/hstring_reference.h"
+      "win/i18n.cc"
+      "win/i18n.h"
+      "win/iat_patch_function.cc"
+      "win/iat_patch_function.h"
+      "win/map.h"
+      "win/message_window.cc"
+      "win/message_window.h"
+      "win/object_watcher.cc"
+      "win/object_watcher.h"
+      "win/patch_util.cc"
+      "win/patch_util.h"
+      "win/post_async_results.h"
+      "win/process_startup_helper.cc"
+      "win/process_startup_helper.h"
+      "win/propvarutil.h"
+      "win/reference.h"
+      "win/registry.cc"
+      "win/registry.h"
+      "win/resource_util.cc"
+      "win/resource_util.h"
+      "win/scoped_bstr.cc"
+      "win/scoped_bstr.h"
+      "win/scoped_co_mem.h"
+      "win/scoped_com_initializer.cc"
+      "win/scoped_com_initializer.h"
+      "win/scoped_gdi_object.h"
+      "win/scoped_handle.cc"
+      "win/scoped_handle.h"
+      "win/scoped_handle_verifier.cc"
+      "win/scoped_handle_verifier.h"
+      "win/scoped_hdc.h"
+      "win/scoped_hglobal.h"
+      "win/scoped_hstring.cc"
+      "win/scoped_hstring.h"
+      "win/scoped_process_information.cc"
+      "win/scoped_process_information.h"
+      "win/scoped_propvariant.h"
+      "win/scoped_safearray.h"
+      "win/scoped_select_object.h"
+      "win/scoped_variant.cc"
+      "win/scoped_variant.h"
+      "win/scoped_windows_thread_environment.h"
+      "win/scoped_winrt_initializer.cc"
+      "win/scoped_winrt_initializer.h"
+      "win/shlwapi.h"
+      "win/shortcut.cc"
+      "win/shortcut.h"
+      "win/sphelper.h"
+      "win/startup_information.cc"
+      "win/startup_information.h"
+      "win/typed_event_handler.h"
+      "win/vector.cc"
+      "win/vector.h"
+      "win/win_util.cc"
+      "win/win_util.h"
+      "win/wincrypt_shim.h"
+      "win/windows_defines.inc"
+      "win/windows_types.h"
+      "win/windows_undefines.inc"
+      "win/windows_version.cc"
+      "win/windows_version.h"
+      "win/windowsx_shim.h"
+      "win/winrt_foundation_helpers.h"
+      "win/winrt_storage_util.cc"
+      "win/winrt_storage_util.h"
+      "win/wmi.cc"
+      "win/wmi.h"
+      "win/wrapped_window_proc.cc"
+      "win/wrapped_window_proc.h"
+	  "base_paths_win.cc"
+      "base_paths_win.h"
+	   "win/static_constants.cc"
+      "win/static_constants.h"
+	  )
+	#移除不需要的文件
+	file(GLOB file_to_remove "file_descriptor_store.cc"
+      "file_descriptor_store.h"
+      "strings/string16.cc"
+	   "linux_util.cc"
+        "linux_util.h")
+	list(REMOVE_ITEM source_files ${file_to_remove})
 
-	  list(REMOVE_ITEM threading "${CMAKE_CURRENT_SOURCE_DIR}/threading/platform_thread_android.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/threading/platform_thread_fuchsia.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/threading/platform_thread_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/threading/platform_thread_internal_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/threading/platform_thread_internal_posix.h"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/threading/platform_thread_linux.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/threading/thread_local_storage_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/threading/platform_thread_mac.mm")
-    
-	 list(REMOVE_ITEM debug "${CMAKE_CURRENT_SOURCE_DIR}/debug/debugger_posix.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/debug/proc_maps_linux.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/debug/proc_maps_linux.h"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/debug/stack_trace_android.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/debug/stack_trace_fuchsia.h"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/debug/stack_trace_fuchsia.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/debug/elf_reader.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/debug/elf_reader.h"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/debug/stack_trace_posix.cc")
-
-
-	  list(REMOVE_ITEM synchronization "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/condition_variable_posix.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/lock_impl_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/waitable_event_mac.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/waitable_event_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/waitable_event_watcher_mac.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/waitable_event_watcher_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/thread_local_storage_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/synchronization/platform_thread_mac.mm")
-
-
-	 list(REMOVE_ITEM time "${CMAKE_CURRENT_SOURCE_DIR}/time/time_android.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/time/time_conversion_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/time/time_exploded_ios.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/time/time_exploded_posix.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/time/time_fuchsia.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/time/time_mac.cc"
-	 "${CMAKE_CURRENT_SOURCE_DIR}/time/time_now_posix.cc")
-
-	list(REMOVE_ITEM files "${CMAKE_CURRENT_SOURCE_DIR}/files/file_descriptor_watcher_posix.cc"
-		  "${CMAKE_CURRENT_SOURCE_DIR}/files/file_descriptor_watcher_posix.h"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_enumerator_posix.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_path_watcher_linux.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_path_watcher_mac.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_posix.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_posix.h"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_util_android.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_util_linux.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_util_posix.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/memory_mapped_file_posix.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/scoped_file_android.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_path_watcher_kqueue.h"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_path_watcher_kqueue.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_path_watcher_fuchsia.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_path_watcher_fsevents.cc"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/file_path_watcher_fsevents.h"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/dir_reader_posix.h"
-		 "${CMAKE_CURRENT_SOURCE_DIR}/files/dir_reader_linux.h")
-
-	list(REMOVE_ITEM strings "${CMAKE_CURRENT_SOURCE_DIR}/strings/string_util_posix.h"
-      "${CMAKE_CURRENT_SOURCE_DIR}/strings/sys_string_conversions_posix.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/strings/file_descriptor_store.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/strings/file_descriptor_store.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/strings/string16.cc")
-
-	list(REMOVE_ITEM util "${CMAKE_CURRENT_SOURCE_DIR}/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
-      "${CMAKE_CURRENT_SOURCE_DIR}/util/memory_pressure/system_memory_pressure_evaluator_chromeos.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/util/memory_pressure/system_memory_pressure_evaluator_mac.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/util/memory_pressure/system_memory_pressure_evaluator_mac.h")
-
-
-	list(REMOVE_ITEM trace_event "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/cpufreq_monitor_android.h"
-      "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/cpufreq_monitor_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/cfi_backtrace_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/cfi_backtrace_android.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/java_heap_dump_provider_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/java_heap_dump_provider_android.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/trace_event/trace_event_android.cc"	)
-
-	 list(REMOVE_ITEM system "${CMAKE_CURRENT_SOURCE_DIR}/system/sys_info_android.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/system/sys_info_chromeos.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/system/sys_info_freebsd.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/system/sys_info_fuchsia.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/system/sys_info_linux.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/system/sys_info_openbsd.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/system/sys_info_posix.cc")
-
-	  list(REMOVE_ITEM profiler "${CMAKE_CURRENT_SOURCE_DIR}/profiler/native_unwinder_android.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/profiler/native_unwinder_android.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/native_unwinder_mac.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/native_unwinder_mac.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/stack_sampler_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/thread_delegate_posix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/thread_delegate_posix.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/suspendable_thread_delegate_mac.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/suspendable_thread_delegate_mac.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/stack_sampler_posix.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/stack_copier_signal.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/stack_sampler_ios.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/profiler/stack_sampler_mac.cc")
-
-	  list(REMOVE_ITEM allocator "${CMAKE_CURRENT_SOURCE_DIR}/allocator/partition_allocator/page_allocator_internals_posix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/allocator/partition_allocator/page_allocator_internals_fuchsia.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/allocator/malloc_zone_functions_mac.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/allocator/malloc_zone_functions_mac.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/allocator/allocator_interception_mac.h")
-
-	  list(REMOVE_ITEM power_monitor "${CMAKE_CURRENT_SOURCE_DIR}/power_monitor/power_monitor_device_source_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/power_monitor/power_monitor_device_source_chromeos.cc")
-
-	 list(REMOVE_ITEM message_loop "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/watchable_io_message_pump_posix.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/watchable_io_message_pump_posix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_libevent.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_libevent.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_fuchsia.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_fuchsia.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_android.h"
-	   "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_io_ios.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_io_ios.h"
-	    "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_glib.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_glib.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_kqueue.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_kqueue.h"	  
-	  "${CMAKE_CURRENT_SOURCE_DIR}/message_loop/message_pump_mac.h")
-
-	   list(REMOVE_ITEM memory "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_allocator_posix.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_allocator_posix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_posix.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/madv_free_discardable_memory_posix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_android.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_android.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_mac.cc"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/memory/platform_shared_memory_region_posix.cc")
-	  
-
-	  #process 移除其他平台
-	  file(GLOB_RECURSE process_posix_to_remove process/*_posix.*)
-	  list(REMOVE_ITEM process ${process_posix_to_remove})
-	   file(GLOB_RECURSE process_mac_to_remove process/*_mac.*)
-	  list(REMOVE_ITEM process ${process_mac_to_remove})
-	  file(GLOB_RECURSE process_ios_to_remove process/*_ios.*)
-	  list(REMOVE_ITEM process ${process_ios_to_remove})
-	   file(GLOB_RECURSE process_linux_to_remove process/*_linux.*)
-	  list(REMOVE_ITEM process ${process_linux_to_remove})
-	   file(GLOB_RECURSE process_openbsd_to_remove process/*_openbsd.*)
-	  list(REMOVE_ITEM process ${process_openbsd_to_remove})
-	  file(GLOB_RECURSE process_freebsd_to_remove process/*_freebsd.*)
-	  list(REMOVE_ITEM process ${process_freebsd_to_remove})
-	  file(GLOB_RECURSE process_fuchsia_to_remove process/*_fuchsia.*)
-	  list(REMOVE_ITEM process ${process_fuchsia_to_remove})
-	    list(REMOVE_ITEM process "${CMAKE_CURRENT_SOURCE_DIR}/process/internal_aix.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/process/internal_aix.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/process/process_metrics_nacl.cc")
-
-
-
-	   #source_files 移除其他平台
-	  file(GLOB_RECURSE source_posix_to_remove *_posix.*)
-	  list(REMOVE_ITEM source_files ${source_posix_to_remove})
-	   file(GLOB_RECURSE source_mac_to_remove *_mac.*)
-	  list(REMOVE_ITEM source_files ${source_mac_to_remove})
-	  file(GLOB_RECURSE source_ios_to_remove *_ios.*)
-	  list(REMOVE_ITEM source_files ${source_ios_to_remove})
-	   file(GLOB_RECURSE source_linux_to_remove *_linux.*)
-	  list(REMOVE_ITEM source_files ${source_linux_to_remove})
-	   file(GLOB_RECURSE source_openbsd_to_remove *_openbsd.*)
-	  list(REMOVE_ITEM source_files ${source_openbsd_to_remove})
-	  file(GLOB_RECURSE source_freebsd_to_remove *_freebsd.*)
-	  list(REMOVE_ITEM source_files ${source_freebsd_to_remove})
-	  file(GLOB_RECURSE source_fuchsia_to_remove *_fuchsia.*)
-	  list(REMOVE_ITEM source_files ${source_fuchsia_to_remove})
-	  file(GLOB_RECURSE source_android_to_remove *_android.*)
-	  list(REMOVE_ITEM source_files ${source_android_to_remove})
-	   list(REMOVE_ITEM source_files "${CMAKE_CURRENT_SOURCE_DIR}/file_descriptor_store.cc"
-      "${CMAKE_CURRENT_SOURCE_DIR}/file_descriptor_store.h"
-	  "${CMAKE_CURRENT_SOURCE_DIR}/linux_util.cc")
-
-
-	   list(REMOVE_ITEM task "${CMAKE_CURRENT_SOURCE_DIR}/task/thread_pool/task_tracker_posix.cc")
-
-
-	 list(REMOVE_ITEM timer "${CMAKE_CURRENT_SOURCE_DIR}/timer/hi_res_timer_manager_posix.cc")
-
-	 FILE (GLOB_RECURSE win win/*.h win/*.cc)
-	 SOURCE_GROUP("win" FILES ${win})
-
-	#移除单元测试
-	file(GLOB_RECURSE win_to_remove win/*unittest*)
-	list(REMOVE_ITEM win ${win_to_remove})
 	INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/base_win_buildflags.cmake")
 
 elseif (IOS)
@@ -492,4 +954,4 @@ elseif (ANDROID)
 endif(WIN32)
  
  
-ADD_LIBRARY (base ${task} ${third_party_superfasthash} ${third_party_icu_source_i18n} ${third_party_icu_source_common}  ${header_files} ${source_files} ${memory} ${message_loop} ${json} ${numerics} ${power_monitor} ${process} ${profiler} ${allocator} ${system} ${trace_event} ${util} ${timer} ${hash} ${strings} ${files} ${containers} ${synchronization}  ${third_party_icu} ${threading} ${win} ${debug}  ${time} ${metrics} ${third_party_nspr} ${third_party_double_conversion} ${third_party_cityhash})
+ADD_LIBRARY (base ${source_files} ${i18n} ${third_party_icu_source_i18n} ${third_party_icu_source_common})

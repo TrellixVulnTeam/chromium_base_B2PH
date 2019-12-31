@@ -10,8 +10,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 
 add_subdirectory(src/base)
 #add_subdirectory(src/net)
-add_subdirectory(src/url)
+#add_subdirectory(src/url)
 #add_subdirectory(src/ipc)
+add_subdirectory(src/third_party/ced)
 add_subdirectory(src/client)
 
 
