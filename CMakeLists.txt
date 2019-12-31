@@ -8,6 +8,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 
+add_subdirectory(src/third_party/boringssl/src boringssl)
 add_subdirectory(src/base)
 #add_subdirectory(src/net)
 #add_subdirectory(src/url)

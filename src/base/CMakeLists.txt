@@ -6,8 +6,6 @@ endif(WIN32)
 
 set (CMAKE_CXX_STANDARD 14)
 
-add_subdirectory(third_party/boringssl/src boringssl)
-
 if(MSVC)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
@@ -16,7 +14,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
 endif()
 
-INCLUDE_DIRECTORIES (. .. third_party/boringssl/src/include third_party/icu/source/common third_party/icu/source/i18n)
+INCLUDE_DIRECTORIES (. .. ../third_party/boringssl/src/include third_party/icu/source/common third_party/icu/source/i18n)
 
 
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/logging_buildflags.cmake")
