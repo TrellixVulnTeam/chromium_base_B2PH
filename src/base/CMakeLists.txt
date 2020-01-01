@@ -760,9 +760,9 @@ FILE (GLOB source_files "allocator/allocator_check.cc"
     "allocator/partition_allocator/spin_lock.cc"
     "allocator/partition_allocator/spin_lock.h")
 
-FILE (GLOB dynamic_annotations  "third_party/valgrind/valgrind.h",
-      "third_party/dynamic_annotations/dynamic_annotations.c",
-      "third_party/dynamic_annotations/dynamic_annotations.h",)
+FILE (GLOB dynamic_annotations  "third_party/valgrind/valgrind.h"
+      "third_party/dynamic_annotations/dynamic_annotations.c"
+      "third_party/dynamic_annotations/dynamic_annotations.h")
 SOURCE_GROUP("third_party\\dynamic_annotations" FILES ${dynamic_annotations})
 
 
