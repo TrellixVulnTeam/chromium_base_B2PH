@@ -1,0 +1,22 @@
+project (zlib)
+if (WIN32)  
+ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE)
+endif(WIN32)
+
+set (CMAKE_CXX_STANDARD 14)
+
+if(MSVC)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD ")
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd ")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd ")
+
+
+endif()
+
+FILE (GLOB sources_files 
+    )
+SOURCE_GROUP("sources_files" FILES ${sources_files})
+
+ADD_LIBRARY (zlib ${sources_files})
