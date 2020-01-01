@@ -722,16 +722,72 @@ FILE (GLOB source_files "allocator/allocator_check.cc"
     "hash/md5_constexpr_internal.h"
     "hash/sha1.h"
 	"files/file_enumerator_win.cc"
-      "memory/platform_shared_memory_region_win.cc"
-      "power_monitor/power_monitor_device_source_win.cc"
-      "profiler/win32_stack_frame_unwinder.cc"
-      "profiler/win32_stack_frame_unwinder.h"
-      "rand_util_win.cc"
-      "system/sys_info_win.cc"
-      "time/time_win.cc"
-	  "base_switches.cc"
-    "base_switches.h")
+    "memory/platform_shared_memory_region_win.cc"
+    "power_monitor/power_monitor_device_source_win.cc"
+    "profiler/win32_stack_frame_unwinder.cc"
+    "profiler/win32_stack_frame_unwinder.h"
+    "rand_util_win.cc"
+    "system/sys_info_win.cc"
+    "time/time_win.cc"
+	"base_switches.cc"
+    "base_switches.h"
+    "allocator/partition_allocator/address_space_randomization.cc"
+    "allocator/partition_allocator/address_space_randomization.h"
+    "allocator/partition_allocator/memory_reclaimer.cc"
+    "allocator/partition_allocator/memory_reclaimer.h"
+    "allocator/partition_allocator/oom.h"
+    "allocator/partition_allocator/oom_callback.cc"
+    "allocator/partition_allocator/oom_callback.h"
+    "allocator/partition_allocator/page_allocator.cc"
+    "allocator/partition_allocator/page_allocator.h"
+    "allocator/partition_allocator/page_allocator_internal.h"
+    "allocator/partition_allocator/partition_alloc.cc"
+    "allocator/partition_allocator/partition_alloc.h"
+    "allocator/partition_allocator/partition_alloc_constants.h"
+    "allocator/partition_allocator/partition_bucket.cc"
+    "allocator/partition_allocator/partition_bucket.h"
+    "allocator/partition_allocator/partition_cookie.h"
+    "allocator/partition_allocator/partition_direct_map_extent.h"
+    "allocator/partition_allocator/partition_freelist_entry.h"
+    "allocator/partition_allocator/partition_oom.cc"
+    "allocator/partition_allocator/partition_oom.h"
+    "allocator/partition_allocator/partition_page.cc"
+    "allocator/partition_allocator/partition_page.h"
+    "allocator/partition_allocator/partition_root_base.cc"
+    "allocator/partition_allocator/partition_root_base.h"
+    "allocator/partition_allocator/random.cc"
+    "allocator/partition_allocator/random.h"
+    "allocator/partition_allocator/spin_lock.cc"
+    "allocator/partition_allocator/spin_lock.h")
 
+FILE (GLOB dynamic_annotations  "third_party/valgrind/valgrind.h",
+      "third_party/dynamic_annotations/dynamic_annotations.c",
+      "third_party/dynamic_annotations/dynamic_annotations.h",)
+SOURCE_GROUP("third_party\\dynamic_annotations" FILES ${dynamic_annotations})
+
+
+FILE (GLOB double_conversion 
+    "third_party/double_conversion/double-conversion/bignum-dtoa.cc"
+    "third_party/double_conversion/double-conversion/bignum-dtoa.h"
+    "third_party/double_conversion/double-conversion/bignum.cc"
+    "third_party/double_conversion/double-conversion/bignum.h"
+    "third_party/double_conversion/double-conversion/cached-powers.cc"
+    "third_party/double_conversion/double-conversion/cached-powers.h"
+    "third_party/double_conversion/double-conversion/diy-fp.h"
+    "third_party/double_conversion/double-conversion/double-conversion.h"
+    "third_party/double_conversion/double-conversion/double-to-string.cc"
+    "third_party/double_conversion/double-conversion/double-to-string.h"
+    "third_party/double_conversion/double-conversion/fast-dtoa.cc"
+    "third_party/double_conversion/double-conversion/fast-dtoa.h"
+    "third_party/double_conversion/double-conversion/fixed-dtoa.cc"
+    "third_party/double_conversion/double-conversion/fixed-dtoa.h"
+    "third_party/double_conversion/double-conversion/ieee.h"
+    "third_party/double_conversion/double-conversion/string-to-double.cc"
+    "third_party/double_conversion/double-conversion/string-to-double.h"
+    "third_party/double_conversion/double-conversion/strtod.cc"
+    "third_party/double_conversion/double-conversion/strtod.h"
+    "third_party/double_conversion/double-conversion/utils.h")
+SOURCE_GROUP("third_party\\double_conversion" FILES ${double_conversion})
 
 FILE (GLOB i18n  "i18n/base_i18n_export.h"
     "i18n/base_i18n_switches.cc"
@@ -844,6 +900,7 @@ if (WIN32)
       "win/core_winrt_util.cc"
       "win/core_winrt_util.h"
       "win/current_module.h"
+      "win/pe_image.cc"
       "win/embedded_i18n/language_selector.cc"
       "win/embedded_i18n/language_selector.h"
       "win/enum_variant.cc"
@@ -952,4 +1009,4 @@ elseif (ANDROID)
 endif(WIN32)
  
  
-ADD_LIBRARY (base ${source_files} ${i18n} ${third_party_icu_source_i18n} ${third_party_icu_source_common})
+ADD_LIBRARY (base ${source_files} ${i18n}  ${double_conversion} ${dynamic_annotations} ${third_party_icu_source_i18n} ${third_party_icu_source_common})
