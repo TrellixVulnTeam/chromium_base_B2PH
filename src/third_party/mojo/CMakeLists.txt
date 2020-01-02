@@ -1,0 +1,283 @@
+﻿project (mojo)
+ADD_DEFINITIONS(-DNOMINMAX)
+if (WIN32)  
+ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN -DUNICODE -D_UNICODE)
+endif(WIN32)
+
+set (CMAKE_CXX_STANDARD 14)
+
+if(MSVC)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MD")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} /MD")
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
+endif()
+
+INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/mojo_buildflags.cmake")
+
+INCLUDE_DIRECTORIES (. .. ../../)
+
+FILE (GLOB mojo_public_system   "public/c/system/buffer.h"
+    "public/c/system/core.h"
+    "public/c/system/data_pipe.h"
+    "public/c/system/functions.h"
+    "public/c/system/invitation.h"
+    "public/c/system/macros.h"
+    "public/c/system/message_pipe.h"
+    "public/c/system/platform_handle.h"
+    "public/c/system/system_export.h"
+    "public/c/system/thunks.h"
+    "public/c/system/trap.h"
+    "public/c/system/types.h"
+    "public/c/system/thunks.cc")
+SOURCE_GROUP("mojo_public_system" FILES ${mojo_public_system})
+
+FILE (GLOB mojo_cpp_platform   "public/cpp/platform/platform_channel.h"
+    "public/cpp/platform/platform_channel_endpoint.h"
+    "public/cpp/platform/platform_channel_server_endpoint.h"
+    "public/cpp/platform/platform_handle.h"
+     "public/cpp/platform/named_platform_channel_win.cc"
+    "public/cpp/platform/platform_channel.cc"
+    "public/cpp/platform/platform_channel_endpoint.cc"
+    "public/cpp/platform/platform_channel_server_endpoint.cc"
+    "public/cpp/platform/platform_handle.cc"
+    "public/cpp/platform/named_platform_channel.cc"
+    "public/cpp/platform/named_platform_channel.h")
+SOURCE_GROUP("mojo_cpp_platform" FILES ${mojo_cpp_platform})
+
+
+
+FILE (GLOB mojo_public_system_cpp   "public/cpp/system/buffer.cc"
+    "public/cpp/system/buffer.h"
+    "public/cpp/system/core.h"
+    "public/cpp/system/data_pipe.cc"
+    "public/cpp/system/data_pipe.h"
+    "public/cpp/system/data_pipe_drainer.cc"
+    "public/cpp/system/data_pipe_drainer.h"
+    "public/cpp/system/data_pipe_producer.cc"
+    "public/cpp/system/data_pipe_producer.h"
+    "public/cpp/system/data_pipe_utils.cc"
+    "public/cpp/system/data_pipe_utils.h"
+    "public/cpp/system/file_data_source.cc"
+    "public/cpp/system/file_data_source.h"
+    "public/cpp/system/filtered_data_source.cc"
+    "public/cpp/system/filtered_data_source.h"
+    "public/cpp/system/functions.h"
+    "public/cpp/system/handle.h"
+    "public/cpp/system/handle_signal_tracker.cc"
+    "public/cpp/system/handle_signal_tracker.h"
+    "public/cpp/system/handle_signals_state.h"
+    "public/cpp/system/invitation.cc"
+    "public/cpp/system/invitation.h"
+    "public/cpp/system/isolated_connection.cc"
+    "public/cpp/system/isolated_connection.h"
+    "public/cpp/system/message.h"
+    "public/cpp/system/message_pipe.cc"
+    "public/cpp/system/message_pipe.h"
+    "public/cpp/system/platform_handle.cc"
+    "public/cpp/system/platform_handle.h"
+    "public/cpp/system/scope_to_message_pipe.cc"
+    "public/cpp/system/scope_to_message_pipe.h"
+    "public/cpp/system/simple_watcher.cc"
+    "public/cpp/system/simple_watcher.h"
+    "public/cpp/system/string_data_source.cc"
+    "public/cpp/system/string_data_source.h"
+    "public/cpp/system/system_export.h"
+    "public/cpp/system/trap.cc"
+    "public/cpp/system/trap.h"
+    "public/cpp/system/wait.cc"
+    "public/cpp/system/wait.h"
+    "public/cpp/system/wait_set.cc"
+    "public/cpp/system/wait_set.h")
+SOURCE_GROUP("mojo_public_system_cpp" FILES ${mojo_public_system_cpp})
+
+
+FILE (GLOB bindings_base  "public/cpp/bindings/array_data_view.h"
+    "public/cpp/bindings/array_traits.h"
+    "public/cpp/bindings/array_traits_span.h"
+    "public/cpp/bindings/array_traits_stl.h"
+    "public/cpp/bindings/associated_group.h"
+    "public/cpp/bindings/associated_group_controller.h"
+    "public/cpp/bindings/clone_traits.h"
+    "public/cpp/bindings/connection_group.cc"
+    "public/cpp/bindings/connection_group.h"
+    "public/cpp/bindings/deprecated_interface_types_forward.h"
+    "public/cpp/bindings/disconnect_reason.h"
+    "public/cpp/bindings/enum_traits.h"
+    "public/cpp/bindings/enum_utils.h"
+    "public/cpp/bindings/equals_traits.h"
+    "public/cpp/bindings/features.cc"
+    "public/cpp/bindings/features.h"
+    "public/cpp/bindings/interface_data_view.h"
+    "public/cpp/bindings/interface_id.h"
+    "public/cpp/bindings/lib/array_internal.cc"
+    "public/cpp/bindings/lib/array_internal.h"
+    "public/cpp/bindings/lib/array_serialization.h"
+    "public/cpp/bindings/lib/associated_group.cc"
+    "public/cpp/bindings/lib/associated_group_controller.cc"
+    "public/cpp/bindings/lib/bindings_internal.h"
+    "public/cpp/bindings/lib/buffer.cc"
+    "public/cpp/bindings/lib/buffer.h"
+    "public/cpp/bindings/lib/fixed_buffer.cc"
+    "public/cpp/bindings/lib/fixed_buffer.h"
+    "public/cpp/bindings/lib/handle_serialization.h"
+    "public/cpp/bindings/lib/hash_util.h"
+    "public/cpp/bindings/lib/map_data_internal.h"
+    "public/cpp/bindings/lib/map_serialization.h"
+    "public/cpp/bindings/lib/may_auto_lock.h"
+    "public/cpp/bindings/lib/message.cc"
+    "public/cpp/bindings/lib/message_header_validator.cc"
+    "public/cpp/bindings/lib/message_internal.cc"
+    "public/cpp/bindings/lib/message_internal.h"
+    "public/cpp/bindings/lib/pending_receiver_state.cc"
+    "public/cpp/bindings/lib/pending_receiver_state.h"
+    "public/cpp/bindings/lib/pending_remote_state.cc"
+    "public/cpp/bindings/lib/pending_remote_state.h"
+    "public/cpp/bindings/lib/scoped_interface_endpoint_handle.cc"
+    "public/cpp/bindings/lib/serialization.h"
+    "public/cpp/bindings/lib/serialization_context.cc"
+    "public/cpp/bindings/lib/serialization_context.h"
+    "public/cpp/bindings/lib/serialization_forward.h"
+    "public/cpp/bindings/lib/serialization_util.h"
+    "public/cpp/bindings/lib/string_serialization.h"
+    "public/cpp/bindings/lib/template_util.h"
+    "public/cpp/bindings/lib/tracing_helper.h"
+    "public/cpp/bindings/lib/unserialized_message_context.cc"
+    "public/cpp/bindings/lib/unserialized_message_context.h"
+    "public/cpp/bindings/lib/validate_params.h"
+    "public/cpp/bindings/lib/validation_context.cc"
+    "public/cpp/bindings/lib/validation_context.h"
+    "public/cpp/bindings/lib/validation_errors.cc"
+    "public/cpp/bindings/lib/validation_errors.h"
+    "public/cpp/bindings/lib/validation_util.cc"
+    "public/cpp/bindings/lib/validation_util.h"
+    "public/cpp/bindings/map_data_view.h"
+    "public/cpp/bindings/map_traits.h"
+    "public/cpp/bindings/map_traits_flat_map.h"
+    "public/cpp/bindings/map_traits_stl.h"
+    "public/cpp/bindings/message.h"
+    "public/cpp/bindings/message_header_validator.h"
+    "public/cpp/bindings/scoped_interface_endpoint_handle.h"
+    "public/cpp/bindings/string_data_view.h"
+    "public/cpp/bindings/string_traits.h"
+    "public/cpp/bindings/string_traits_stl.h"
+    "public/cpp/bindings/string_traits_string_piece.h"
+    "public/cpp/bindings/struct_forward.h"
+    "public/cpp/bindings/struct_ptr.h"
+    "public/cpp/bindings/struct_traits.h"
+    "public/cpp/bindings/type_converter.h"
+    "public/cpp/bindings/union_traits.h")
+SOURCE_GROUP("bindings_base" FILES ${bindings_base})
+
+
+
+FILE (GLOB bindings   "public/cpp/bindings/associated_binding.h"
+    "public/cpp/bindings/associated_binding_set.h"
+    "public/cpp/bindings/associated_interface_ptr.h"
+    "public/cpp/bindings/associated_interface_ptr_info.h"
+    "public/cpp/bindings/associated_interface_request.h"
+    "public/cpp/bindings/associated_receiver.h"
+    "public/cpp/bindings/associated_receiver_set.h"
+    "public/cpp/bindings/associated_remote.h"
+    "public/cpp/bindings/binder_map.cc"
+    "public/cpp/bindings/binder_map.h"
+    "public/cpp/bindings/binding.h"
+    "public/cpp/bindings/binding_set.h"
+    "public/cpp/bindings/callback_helpers.h"
+    "public/cpp/bindings/connection_error_callback.h"
+    "public/cpp/bindings/connector.h"
+    "public/cpp/bindings/generic_pending_receiver.cc"
+    "public/cpp/bindings/generic_pending_receiver.h"
+    "public/cpp/bindings/interface_endpoint_client.h"
+    "public/cpp/bindings/interface_endpoint_controller.h"
+    "public/cpp/bindings/interface_ptr.h"
+    "public/cpp/bindings/interface_ptr_info.h"
+    "public/cpp/bindings/interface_ptr_set.h"
+    "public/cpp/bindings/interface_request.h"
+    "public/cpp/bindings/lib/associated_binding.cc"
+    "public/cpp/bindings/lib/associated_interface_ptr.cc"
+    "public/cpp/bindings/lib/associated_interface_ptr_state.cc"
+    "public/cpp/bindings/lib/associated_interface_ptr_state.h"
+    "public/cpp/bindings/lib/binding_state.cc"
+    "public/cpp/bindings/lib/binding_state.h"
+    "public/cpp/bindings/lib/connector.cc"
+    "public/cpp/bindings/lib/control_message_handler.cc"
+    "public/cpp/bindings/lib/control_message_handler.h"
+    "public/cpp/bindings/lib/control_message_proxy.cc"
+    "public/cpp/bindings/lib/control_message_proxy.h"
+    "public/cpp/bindings/lib/generated_code_util.cc"
+    "public/cpp/bindings/lib/generated_code_util.h"
+    "public/cpp/bindings/lib/interface_endpoint_client.cc"
+    "public/cpp/bindings/lib/interface_ptr_state.cc"
+    "public/cpp/bindings/lib/interface_ptr_state.h"
+    "public/cpp/bindings/lib/interface_serialization.h"
+    "public/cpp/bindings/lib/message_dispatcher.cc"
+    "public/cpp/bindings/lib/message_quota_checker.cc"
+    "public/cpp/bindings/lib/message_quota_checker.h"
+    "public/cpp/bindings/lib/multiplex_router.cc"
+    "public/cpp/bindings/lib/multiplex_router.h"
+    "public/cpp/bindings/lib/native_enum_data.h"
+    "public/cpp/bindings/lib/native_enum_serialization.h"
+    "public/cpp/bindings/lib/native_struct_serialization.cc"
+    "public/cpp/bindings/lib/native_struct_serialization.h"
+    "public/cpp/bindings/lib/pipe_control_message_handler.cc"
+    "public/cpp/bindings/lib/pipe_control_message_proxy.cc"
+    "public/cpp/bindings/lib/sequence_local_sync_event_watcher.cc"
+    "public/cpp/bindings/lib/sync_call_restrictions.cc"
+    "public/cpp/bindings/lib/sync_event_watcher.cc"
+    "public/cpp/bindings/lib/sync_handle_registry.cc"
+    "public/cpp/bindings/lib/sync_handle_watcher.cc"
+    "public/cpp/bindings/lib/task_runner_helper.cc"
+    "public/cpp/bindings/lib/task_runner_helper.h"
+    "public/cpp/bindings/message_dispatcher.h"
+    "public/cpp/bindings/native_enum.h"
+    "public/cpp/bindings/pending_associated_receiver.h"
+    "public/cpp/bindings/pending_associated_remote.h"
+    "public/cpp/bindings/pending_receiver.h"
+    "public/cpp/bindings/pending_remote.h"
+    "public/cpp/bindings/pipe_control_message_handler.h"
+    "public/cpp/bindings/pipe_control_message_handler_delegate.h"
+    "public/cpp/bindings/pipe_control_message_proxy.h"
+    "public/cpp/bindings/raw_ptr_impl_ref_traits.h"
+    "public/cpp/bindings/receiver.h"
+    "public/cpp/bindings/receiver_set.h"
+    "public/cpp/bindings/remote.h"
+    "public/cpp/bindings/remote_set.h"
+    "public/cpp/bindings/self_owned_associated_receiver.h"
+    "public/cpp/bindings/self_owned_receiver.h"
+    "public/cpp/bindings/sequence_local_sync_event_watcher.h"
+    "public/cpp/bindings/service_factory.cc"
+    "public/cpp/bindings/service_factory.h"
+    "public/cpp/bindings/shared_associated_remote.h"
+    "public/cpp/bindings/shared_remote.h"
+    "public/cpp/bindings/strong_associated_binding.h"
+    "public/cpp/bindings/strong_binding.h"
+    "public/cpp/bindings/strong_binding_set.h"
+    "public/cpp/bindings/sync_call_restrictions.h"
+    "public/cpp/bindings/sync_event_watcher.h"
+    "public/cpp/bindings/sync_handle_registry.h"
+    "public/cpp/bindings/sync_handle_watcher.h"
+    "public/cpp/bindings/thread_safe_forwarder_base.cc"
+    "public/cpp/bindings/thread_safe_forwarder_base.h"
+    "public/cpp/bindings/thread_safe_interface_ptr.h"
+    "public/cpp/bindings/unique_associated_receiver_set.h"
+    "public/cpp/bindings/unique_ptr_impl_ref_traits.h"
+    "public/cpp/bindings/unique_receiver_set.h")
+SOURCE_GROUP("bindings" FILES ${bindings})
+
+
+if (WIN32)  
+  
+
+elseif (IOS)
+
+
+elseif (OSX)
+
+
+elseif (ANDROID)
+
+endif(WIN32)
+ 
+ADD_LIBRARY (mojo ${mojo_public_system} ${bindings_base}  ${bindings} ${mojo_public_system_cpp} ${mojo_cpp_platform}) 

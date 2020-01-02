@@ -14,7 +14,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MDd")
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /MDd")
 endif()
 
-INCLUDE_DIRECTORIES (. ..)
+INCLUDE_DIRECTORIES (. .. ../third_party ../third_party/boringssl/src/include)
+
+INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/ipc_buildflags.cmake")
 
 FILE (GLOB source_files  "ipc_message_utils.cc"
     "ipc_message_utils.h"
@@ -58,15 +60,12 @@ FILE (GLOB source_files  "ipc_message_utils.cc"
       "message_filter_router.h"
       "message_router.cc"
       "message_router.h"
-	  ipc_channel.cc
-	  ipc_message_protobuf_utils.h)
+	  "ipc_channel.cc"
+	  "ipc_message_protobuf_utils.h")
 
 
 
-FILE (GLOB message_support  "handle_attachment_win.cc"
-    "handle_attachment_win.h"
-    "handle_win.cc"
-    "handle_win.h"
+FILE (GLOB message_support  
     "ipc_message.cc"
     "ipc_message.h"
     "ipc_message_attachment.cc"
@@ -81,11 +80,7 @@ FILE (GLOB message_support  "handle_attachment_win.cc"
     "ipc_platform_file.cc"
     "ipc_platform_file.h"
     "ipc_sync_message.cc"
-    "ipc_sync_message.h"
-    "mach_port_attachment_mac.cc"
-    "mach_port_attachment_mac.h"
-    "mach_port_mac.cc"
-    "mach_port_mac.h")
+    "ipc_sync_message.h")
 SOURCE_GROUP("message_support" FILES ${message_support})
 
 FILE (GLOB native_handle_type_converters "native_handle_type_converters.cc"
@@ -94,7 +89,11 @@ SOURCE_GROUP("native_handle_type_converters" FILES ${native_handle_type_converte
 
 
 if (WIN32)  
-  
+  list(APPEND message_support 
+    "handle_win.cc"
+    "handle_win.h"
+    "handle_attachment_win.cc"
+    "handle_attachment_win.h")
 
 elseif (IOS)
 

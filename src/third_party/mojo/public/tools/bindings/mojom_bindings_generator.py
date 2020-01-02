@@ -54,7 +54,7 @@ from mojom.parse.parser import Parse
 
 sys.path.append(
     os.path.join(_GetDirAbove("mojo"), "tools", "diagnosis"))
-import crbug_1001171
+#import crbug_1001171
 
 
 _BUILTIN_GENERATORS = {
@@ -552,5 +552,5 @@ def main():
 
 
 if __name__ == "__main__":
-  with crbug_1001171.DumpStateOnLookupError():
-    sys.exit(main())
+  #with crbug_1001171.DumpStateOnLookupError():
+  sys.exit(main())
