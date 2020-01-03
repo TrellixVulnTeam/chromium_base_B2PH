@@ -27,6 +27,10 @@ FILE (GLOB source_files  "ipc_message_utils.cc"
     "param_traits_read_macros.h"
     "param_traits_write_macros.h"
     "struct_constructor_macros.h"
+    "message_view.cc"
+    "message_view.h"
+    "message_mojom_traits.cc"
+    "message_mojom_traits.h"
 	 "ipc_channel.h"
       "ipc_channel_common.cc"
       "ipc_channel_factory.cc"
@@ -63,9 +67,7 @@ FILE (GLOB source_files  "ipc_message_utils.cc"
 	  "ipc_channel.cc"
 	  "ipc_message_protobuf_utils.h")
 
-
-
-FILE (GLOB message_support  
+FILE (GLOB autogen  
     "ipc_message.cc"
     "ipc_message.h"
     "ipc_message_attachment.cc"
@@ -81,6 +83,17 @@ FILE (GLOB message_support
     "ipc_platform_file.h"
     "ipc_sync_message.cc"
     "ipc_sync_message.h")
+SOURCE_GROUP("autogen" FILES ${autogen})
+
+FILE (GLOB message_support  
+    "constants.mojom.cc"
+    "constants.mojom.h"
+    "constants.mojom-shared.cc"
+    "constants.mojom-shared.h"
+    "ipc.mojom.cc"
+    "ipc.mojom.h"
+    "ipc.mojom-shared.h"
+    "ipc.mojom-shared.cc")
 SOURCE_GROUP("message_support" FILES ${message_support})
 
 FILE (GLOB native_handle_type_converters "native_handle_type_converters.cc"
@@ -105,4 +118,4 @@ elseif (ANDROID)
 
 endif(WIN32)
  
-ADD_LIBRARY (ipc ${source_files} ${message_support} ${native_handle_type_converters})
+ADD_LIBRARY (ipc ${source_files} ${message_support} ${native_handle_type_converters} ${autogen})

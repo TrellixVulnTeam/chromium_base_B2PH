@@ -16,6 +16,7 @@ add_subdirectory(src/ipc)
 add_subdirectory(src/third_party/ced)
 add_subdirectory(src/third_party/mojo)
 add_subdirectory(src/third_party/protobuf)
+add_subdirectory(src/crypto)
 add_subdirectory(src/client)
 
 

@@ -3,6 +3,9 @@
 
 #include "WindowsProject1.h"
 
+#include <ipc/ipc_channel.h>
+#include <ipc/ipc_listener.h>
+#include <ipc/ipc_channel_mojo.h>
 #include <base/memory/read_only_shared_memory_region.h>
 #include <base/memory/ref_counted_memory.h>
 #include <base/memory/scoped_refptr.h>
@@ -16,6 +19,7 @@
 #include <base/logging.h>
 #include <base/command_line.h>
 #include <base/message_loop/message_loop_current.h>
+#include <third_party/mojo/core/embedder/embedder.h>
 #include <url/url_util.h>
 #include "framework.h"
 #define MAX_LOADSTRING 100
@@ -30,6 +34,71 @@ ATOM MyRegisterClass(HINSTANCE hInstance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
+
+
+void SendString(IPC::Sender* sender, const std::string& str) {
+  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+  message->WriteString(str);
+  sender->Send(message);
+}
+
+void SendValue(IPC::Sender* sender, int32_t value) {
+  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
+  message->WriteInt(value);
+  sender->Send(message);
+}
+
+
+class ListenerThatExpectsOK : public IPC::Listener {
+ public:
+  explicit ListenerThatExpectsOK(base::OnceClosure quit_closure)
+      : received_ok_(false), quit_closure_(std::move(quit_closure)) {}
+
+  ~ListenerThatExpectsOK() override = default;
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    base::PickleIterator iter(message);
+    std::string should_be_ok;
+    iter.ReadString(&should_be_ok);
+    received_ok_ = true;
+    std::move(quit_closure_).Run();
+    return true;
+  }
+
+  void OnChannelError() override {
+    // The connection should be healthy while the listener is waiting
+    // message.  An error can occur after that because the peer
+    // process dies.
+    CHECK(received_ok_);
+  }
+
+  static void SendOK(IPC::Sender* sender) { SendString(sender, "OK"); }
+
+ private:
+  bool received_ok_;
+  base::OnceClosure quit_closure_;
+};
+
+
+class TestListenerBase : public IPC::Listener {
+ public:
+  explicit TestListenerBase(base::OnceClosure quit_closure)
+      : quit_closure_(std::move(quit_closure)) {}
+
+  ~TestListenerBase() override = default;
+  void OnChannelError() override { RunQuitClosure(); }
+
+  void set_sender(IPC::Sender* sender) { sender_ = sender; }
+  IPC::Sender* sender() const { return sender_; }
+  void RunQuitClosure() {
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
+  }
+
+ private:
+  IPC::Sender* sender_ = nullptr;
+  base::OnceClosure quit_closure_;
+};
 
 
 class PowerMonitorTestObserver : public base::PowerObserver {
@@ -118,6 +187,8 @@ wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
 
   LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WINDOWSPROJECT1));
 
+
+
   base::CommandLine::Init(0, nullptr);
   
   logging::LoggingSettings settings;
@@ -138,6 +209,13 @@ wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
       std::make_unique<base::PowerMonitorDeviceSource>());
   base::PowerMonitor::AddObserver(new PowerMonitorTestObserver);
 
+  mojo::core::Init();
+
+
+  std::unique_ptr<IPC::Channel> channel = IPC::ChannelMojo::Create(
+      mojo::ScopedMessagePipeHandle(), IPC::Channel::MODE_SERVER,
+                               nullptr, base::ThreadTaskRunnerHandle::Get(),
+                               base::ThreadTaskRunnerHandle::Get(), nullptr);
 
   run_loop.Run();
 
