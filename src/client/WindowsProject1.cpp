@@ -19,7 +19,7 @@
 #include <base/logging.h>
 #include <base/command_line.h>
 #include <base/message_loop/message_loop_current.h>
-#include <third_party/mojo/core/embedder/embedder.h>
+#include <mojo/core/embedder/embedder.h>
 #include <url/url_util.h>
 #include "framework.h"
 #define MAX_LOADSTRING 100

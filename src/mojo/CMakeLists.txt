@@ -16,7 +16,7 @@ endif()
 
 INCLUDE ("${CMAKE_CURRENT_SOURCE_DIR}/auto_gen/mojo_buildflags.cmake")
 
-INCLUDE_DIRECTORIES (. .. ../../ ../boringssl/src/include)
+INCLUDE_DIRECTORIES (. .. ../../ ../third_party/boringssl/src/include)
 
 FILE (GLOB mojo_public_system   "public/c/system/buffer.h"
     "public/c/system/core.h"
